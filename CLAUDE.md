@@ -6,7 +6,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks | Active — Phase 2 done, Phase 3 next |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 3 done, Phase 4 next |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
 
 ## Terms
@@ -28,7 +28,8 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - **Data location:** {project_root}/.claude/convergence/ (decoupled from plugin install dir as of Phase 1)
 - **Security:** sanitizer strips paths, tokens, JWT, API keys, usernames, env vars
 - **Frontend:** Next.js 16 + React 19 + shadcn/ui dashboard (app/page.tsx)
-- **Hooks:** convergence-dispatcher.py (PostToolUseFailure), convergence-synthesizer.py (SessionEnd)
+- **Hooks:** convergence-dispatcher.py (PostToolUseFailure), convergence-synthesizer.py (SessionEnd), fingerprint-matcher.py (PreToolUse on Bash|Execute)
+- **CLAUDE.md bridge:** agents/claude_md_bridge.py — writes convergence knowledge table to {project_root}/CLAUDE.md with section markers + atomic writes + filelock
 - **Path resolution:** config.get_project_root() — CLAUDE_PROJECT_DIR env var → os.getcwd() → plugin root fallback
 
 ## Active Plan v2 (cross-session plugin refactor)
@@ -49,21 +50,27 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 7. ✅ file_lock.py: replaced fcntl with filelock library (cross-process safe, 20 retries, 2s max backoff)
 8. ✅ 101/101 tests pass (59 original + 42 new fingerprint tests)
 
-### Phase 3 — CLAUDE.md Bridge (NEXT SESSION)
-9. Arbiter writes convergence knowledge to CLAUDE.md with section markers + atomic writes
-10. Session-start pattern matcher hook: short-circuit re-research for known fingerprints (~15-20k token savings per match)
+### Phase 3 — CLAUDE.md Bridge ✅ DONE (2026-02-17)
+9. ✅ agents/claude_md_bridge.py: builds Grove-inspired knowledge table (fingerprint, error pattern, root cause, fix, applicability predicate, seen count)
+10. ✅ Arbiter integration: synthesize() writes convergence section to {project_root}/CLAUDE.md with `<!-- convergence-engine:start/end -->` markers + atomic write + filelock
+11. ✅ Dispatcher enhancement: converged fingerprint matches emit cached resolution to stderr, skip re-research (~15-20k token savings per match)
+12. ✅ hooks/fingerprint-matcher.py: PreToolUse on Bash|Execute — loads known patterns from CLAUDE.md knowledge table, warns on pattern match
+13. ✅ plugin.json v3.0.0: added PreToolUse hook for fingerprint-matcher
+14. ✅ 152/152 tests pass (101 original + 43 bridge tests + 8 matcher tests)
 
-### Phase 4-5 — Quality & Portability (stretch)
+### Phase 4-5 — Quality & Portability (NEXT SESSION)
 10. Agent output JSON schemas (MAST-inspired inter-agent contract)
 11. Adversarial debate roles (RedDebate-inspired)
 12. Checkpoint architecture (phase re-execution without re-research)
 13. Plugin install testing + documentation
 
-## Critical Edge Cases (must address in Phase 3+)
+## Critical Edge Cases (must address in Phase 4+)
 - ✅ Concurrent sessions: filelock library (Phase 2)
 - ✅ Schema migration: migrate_issue() auto-populates Phase 2 fields (Phase 2)
-- CLAUDE.md writes: section markers + atomic write to prevent user edit loss (Phase 3)
-- Sandbox mode: new components need mock paths for existing tests (ongoing)
+- ✅ CLAUDE.md writes: section markers + atomic write + filelock to prevent user edit loss (Phase 3)
+- ✅ Corrupt markers: graceful fallback strips partial markers (Phase 3)
+- ✅ Sandbox mode: bridge write skipped in sandbox mode; matcher tests use monkeypatch (Phase 3)
+- Agent output format drift: need strict JSON schemas between agents (Phase 4)
 
 ## Research References (methodology insights)
 - **Grove** (arxiv 2511.17833): hierarchical knowledge trees with applicability predicates — model for CLAUDE.md bridge

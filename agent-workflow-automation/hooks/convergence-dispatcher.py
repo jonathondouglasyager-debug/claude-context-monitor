@@ -79,6 +79,47 @@ def _classify_error_type(tool_name: str, error_text: str) -> str:
     return "error"
 
 
+def _emit_cached_resolution(duplicate: dict, log) -> None:
+    """
+    Emit cached resolution info to stderr so it surfaces in the Claude session.
+
+    When a known-converged error recurs, this avoids re-research (~15-20k tokens)
+    by pointing the session to the existing fix.
+    """
+    try:
+        from agents.config import get_research_dir
+        issue_id = duplicate.get("id", "")
+        research_dir = get_research_dir(issue_id)
+
+        # Try to load the solution summary
+        solution_path = os.path.join(research_dir, "solutions.md")
+        hint = ""
+        if os.path.exists(solution_path):
+            with open(solution_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            # Extract first substantive paragraph (skip headers)
+            for line in content.split("\n"):
+                line = line.strip()
+                if line and not line.startswith("#") and not line.startswith("---"):
+                    hint = line[:300]
+                    break
+
+        if hint:
+            print(
+                f"[convergence-engine] Known error (seen {duplicate.get('occurrence_count', '?')}x). "
+                f"Cached fix: {hint}",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"[convergence-engine] Known error (seen {duplicate.get('occurrence_count', '?')}x). "
+                f"Check convergence report for resolution.",
+                file=sys.stderr,
+            )
+    except Exception as e:
+        log.warn(f"Failed to emit cached resolution: {e}")
+
+
 def main():
     """Read hook payload from stdin, create enriched issue, write to issues.jsonl."""
 
@@ -166,10 +207,22 @@ def main():
                 "occurrence_count": new_count,
                 "last_seen": now,
             })
-            log.info(
-                f"Dedup: matched existing {dup_id} (count={new_count})",
-                tool=tool_name,
-            )
+
+            # Phase 3: Short-circuit for converged issues with known resolutions
+            dup_status = duplicate.get("status", "")
+            if dup_status == "converged" and new_count > 1:
+                log.info(
+                    f"Known resolution: {dup_id} (status=converged, count={new_count}) "
+                    f"— skipping re-research. Check CLAUDE.md or convergence report for fix.",
+                    tool=tool_name,
+                )
+                # Output cached resolution hint to stderr so it appears in session
+                _emit_cached_resolution(duplicate, log)
+            else:
+                log.info(
+                    f"Dedup: matched existing {dup_id} (count={new_count})",
+                    tool=tool_name,
+                )
         else:
             # New unique error — append
             atomic_append(issues_path, sanitized_issue)

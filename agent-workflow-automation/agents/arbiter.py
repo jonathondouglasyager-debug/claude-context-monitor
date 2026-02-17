@@ -25,8 +25,11 @@ from agents.config import (
     get_research_dir,
     get_convergence_dir,
     get_archive_dir,
+    get_project_root,
     load_convergence_config,
+    is_sandbox,
 )
+from agents.claude_md_bridge import build_convergence_section, write_to_claude_md
 from agents.file_lock import read_jsonl, update_jsonl_record
 from agents.logger import AgentLogger, PipelineLogger
 from agents.runner import run_agent, write_research_output
@@ -283,6 +286,23 @@ def synthesize(issue_filter: Optional[str] = None) -> bool:
         issue_id = issue.get("id")
         if issue_id:
             update_jsonl_record(issues_path, issue_id, {"status": "converged"})
+
+    # Phase 3: Write convergence knowledge to project CLAUDE.md
+    if not is_sandbox():
+        try:
+            section = build_convergence_section(
+                issues=eligible,
+                tasks=tasks,
+                research_dir_fn=get_research_dir,
+            )
+            write_to_claude_md(
+                project_root=get_project_root(),
+                section_content=section,
+                log=log,
+            )
+        except Exception as e:
+            # Non-fatal: convergence still succeeded even if bridge write fails
+            log.warn(f"CLAUDE.md bridge write failed (non-fatal): {e}")
 
     log.info(f"Convergence complete: {len(eligible)} issues, {len(tasks)} tasks")
     return True
