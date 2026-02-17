@@ -7,7 +7,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.3 done, Phase 5 (portability) next |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 5b done, ready for real-project install test |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
 
 **Repo:** https://github.com/jonathondouglasyager-debug/claude-context-monitor (pushed 2026-02-17)
@@ -93,11 +93,19 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 35. ✅ Output file verification: can_skip_phase checks both checkpoint status AND file existence
 36. ✅ 277/277 tests pass (244 original + 33 new checkpoint tests)
 
-### Phase 5 — Plugin Portability (NEXT SESSION)
-37. Plugin install testing (`claude plugin add`)
-38. Verify $CLAUDE_PLUGIN_ROOT with symlinks
-39. .gitignore for convergence data
-40. README documentation
+### Phase 5a — Plugin Portability Setup ✅ DONE (2026-02-17)
+37. ✅ .claude-plugin/plugin.json: created canonical location for `claude plugin add` discovery
+38. ✅ Symlink resolution: verified get_project_root() uses os.path.realpath() on all 3 branches (env var, cwd, fallback)
+39. ✅ .gitignore: expanded to cover .claude/convergence/ runtime data, legacy data/convergence dirs, lock files, test artifacts
+40. ✅ Removed phantom `error-learning` command from plugin.json (file never existed)
+41. ✅ 277/277 tests pass
+
+### Phase 5b — README & Final Polish ✅ DONE (2026-02-17)
+42. ✅ README.md: comprehensive docs (install, usage, architecture, config, data layout, research refs)
+43. ✅ Plugin structure verification: both plugin.json valid, all 3 hooks compile, commands exist, 277/277 tests pass
+44. ⏳ Live hook execution test: requires `claude plugin add` on real project (manual step)
+
+**Next:** Run `claude plugin add` on a real project, trigger a deliberate failure, confirm dispatcher captures it and data lands in `.claude/convergence/data/`.
 
 ## Critical Edge Cases (must address in Phase 4+)
 - ✅ Concurrent sessions: filelock library (Phase 2)
