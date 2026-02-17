@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Offload message processing to thread",
+    "description": "Move the queue processing logic from the main loop to a separate worker thread.",
+    "issue_id": "issue_20260216_195214_87l1",
+    "priority": "P1",
+    "complexity": "medium",
+    "files_likely_affected": [
+      "src/event_loop.py",
+      "src/queue.py"
+    ],
+    "suggested_approach": "Use threading.Thread or asyncio.to_thread",
+    "id": "task_001",
+    "status": "pending"
+  },
+  {
+    "title": "Add queue size metrics",
+    "description": "Instrument the queue to report size and processing time.",
+    "issue_id": "issue_20260216_195214_87l1",
+    "priority": "P2",
+    "complexity": "low",
+    "files_likely_affected": [
+      "src/queue.py"
+    ],
+    "suggested_approach": "Use standard metrics library",
+    "id": "task_002",
+    "status": "pending"
+  }
+]

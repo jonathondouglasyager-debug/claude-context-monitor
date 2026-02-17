@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "Claude Context Monitor",
+    "version": "1.0",
+    "description": "Monitors potential context window usage on Claude.ai",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://claude.ai/*"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://claude.ai/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
+}

@@ -1,0 +1,36 @@
+{
+  "error_learning": {
+    "enabled": true,
+    "auto_fix": true,
+    "pattern_matching": true,
+    "severity_tracking": true,
+    "max_error_history": 1000,
+    "dedup_window_seconds": 30,
+    "confidence_threshold": 0.7
+  },
+  "convergence": {
+    "enabled": true,
+    "auto_research": true,
+    "auto_converge_on_session_end": true,
+    "min_issues_for_convergence": 1,
+    "sandbox_mode": true,
+    "budget": {
+      "max_parallel_agents": 2,
+      "max_tokens_per_agent": 4000,
+      "max_research_rounds": 3,
+      "timeout_seconds": 300,
+      "model_map": {
+        "research": "default",
+        "debate": "default",
+        "converge": "default"
+      },
+      "fallback_model": "haiku"
+    },
+    "sanitizer": {
+      "enabled": true,
+      "strip_paths": true,
+      "strip_tokens": true,
+      "strip_usernames": true
+    }
+  }
+}

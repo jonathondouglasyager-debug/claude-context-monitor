@@ -1,0 +1,140 @@
+[2026-02-16T19:52:22Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for issue_20260216_195214_87l1
+
+============================================================
+  [issue_20260216_195214_87l1] RESEARCH: Root Cause Analysis
+============================================================
+
+============================================================
+  [issue_20260216_195214_87l1] SOLUTIONS: Solution Research
+============================================================
+[2026-02-16T19:52:22Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Issue loaded, constructing research prompt
+[2026-02-16T19:52:22Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Issue loaded, constructing solution prompt
+[2026-02-16T19:52:22Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1186
+[2026-02-16T19:52:22Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1046
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Agent subprocess failed: error: unknown option '--max-tokens'
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [RESEARCH] [ERROR] Agent subprocess failed: error: unknown option '--max-tokens'
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [RESEARCH] [ERROR] Research agent failed: error: unknown option '--max-tokens'
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Solution finder failed: error: unknown option '--max-tokens'
+
+============================================================
+  [issue_20260216_195214_87l1] IMPACT: Impact Assessment
+============================================================
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Issue loaded, constructing impact assessment prompt
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1352
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [IMPACT] [ERROR] Agent subprocess failed: error: unknown option '--max-tokens'
+[2026-02-16T19:52:23Z] [issue_20260216_195214_87l1] [IMPACT] [ERROR] Impact assessor failed: error: unknown option '--max-tokens'
+[2026-02-16T19:52:23Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for issue_20260216_195214_87l1 | results={'researcher': False, 'solution_finder': False, 'impact_assessor': False} | status=captured
+[2026-02-16T19:52:53Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for issue_20260216_195214_87l1
+
+============================================================
+  [issue_20260216_195214_87l1] RESEARCH: Root Cause Analysis
+============================================================
+
+============================================================
+  [issue_20260216_195214_87l1] SOLUTIONS: Solution Research
+============================================================
+[2026-02-16T19:52:53Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Issue loaded, constructing research prompt
+[2026-02-16T19:52:53Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Issue loaded, constructing solution prompt
+[2026-02-16T19:52:53Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1186
+[2026-02-16T19:52:53Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1046
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [RESEARCH] [ERROR] Agent timed out after 60s
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Agent timed out after 60s
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Solution finder failed: Timed out after 60 seconds
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [RESEARCH] [ERROR] Research agent failed: Timed out after 60 seconds
+
+============================================================
+  [issue_20260216_195214_87l1] IMPACT: Impact Assessment
+============================================================
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Issue loaded, constructing impact assessment prompt
+[2026-02-16T19:53:53Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Spawning agent subprocess | model=default | timeout=60 | prompt_length=1352
+[2026-02-16T19:54:11Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Agent completed successfully | output_length=2046
+[2026-02-16T19:54:11Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Wrote research output: impact.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/impact.md
+[2026-02-16T19:54:11Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Impact assessment complete
+[2026-02-16T19:54:11Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for issue_20260216_195214_87l1 | results={'researcher': False, 'solution_finder': False, 'impact_assessor': True} | status=researched
+[2026-02-16T19:54:16Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for issue_20260216_195214_87l1
+
+============================================================
+  [issue_20260216_195214_87l1] RESEARCH: Root Cause Analysis
+============================================================
+
+============================================================
+  [issue_20260216_195214_87l1] SOLUTIONS: Solution Research
+============================================================
+[2026-02-16T19:54:16Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Issue loaded, constructing research prompt
+[2026-02-16T19:54:16Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Issue loaded, constructing solution prompt
+[2026-02-16T19:54:16Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Spawning agent subprocess | model=default | timeout=300 | prompt_length=1186
+[2026-02-16T19:54:16Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Spawning agent subprocess | model=default | timeout=300 | prompt_length=1046
+[2026-02-16T19:57:38Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Agent completed successfully | output_length=267
+[2026-02-16T19:57:38Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Wrote research output: root_cause.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/root_cause.md
+[2026-02-16T19:57:38Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Root cause analysis complete
+[2026-02-16T19:59:16Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Agent timed out after 300s
+[2026-02-16T19:59:16Z] [issue_20260216_195214_87l1] [SOLUTIONS] [ERROR] Solution finder failed: Timed out after 300 seconds
+
+============================================================
+  [issue_20260216_195214_87l1] IMPACT: Impact Assessment
+============================================================
+[2026-02-16T19:59:16Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Issue loaded, constructing impact assessment prompt
+[2026-02-16T19:59:16Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Spawning agent subprocess | model=default | timeout=300 | prompt_length=1352
+[2026-02-16T19:59:31Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Agent completed successfully | output_length=1850
+[2026-02-16T19:59:31Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Wrote research output: impact.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/impact.md
+[2026-02-16T19:59:31Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Impact assessment complete
+[2026-02-16T19:59:31Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for issue_20260216_195214_87l1 | results={'researcher': True, 'solution_finder': False, 'impact_assessor': True} | status=researched
+[2026-02-16T19:59:43Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for issue_20260216_195214_87l1
+
+============================================================
+  [issue_20260216_195214_87l1] RESEARCH: Root Cause Analysis
+============================================================
+
+============================================================
+  [issue_20260216_195214_87l1] SOLUTIONS: Solution Research
+============================================================
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Issue loaded, constructing research prompt
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Issue loaded, constructing solution prompt
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Sandbox mode: returning mock response
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Root cause analysis available, incorporating into prompt
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Sandbox mode: returning mock response
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Wrote research output: root_cause.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/root_cause.md
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [RESEARCH] [INFO] Root cause analysis complete
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Wrote research output: solutions.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/solutions.md
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [SOLUTIONS] [INFO] Solution research complete
+
+============================================================
+  [issue_20260216_195214_87l1] IMPACT: Impact Assessment
+============================================================
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Issue loaded, constructing impact assessment prompt
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Sandbox mode: returning mock response
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Wrote research output: impact.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/impact.md
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [IMPACT] [INFO] Impact assessment complete
+[2026-02-16T19:59:43Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for issue_20260216_195214_87l1 | results={'researcher': True, 'solution_finder': True, 'impact_assessor': True} | status=researched
+
+============================================================
+  [issue_20260216_195214_87l1] DEBATE: Cross-Agent Debate
+============================================================
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [DEBATE] [INFO] Research outputs loaded, constructing debate prompt
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [DEBATE] [INFO] Sandbox mode: returning mock response
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [DEBATE] [INFO] Wrote research output: debate.md | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/debate.md
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [DEBATE] [INFO] Wrote research output: debate.log | path=/Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/data/research/issue_20260216_195214_87l1/debate.log
+[2026-02-16T19:59:43Z] [issue_20260216_195214_87l1] [DEBATE] [INFO] Debate complete
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-16T19:59:43Z] [PIPELINE] [CONVERGE] [INFO] Converging 1 issues
+[2026-02-16T19:59:43Z] [PIPELINE] [CONVERGE] [INFO] Sandbox mode: returning mock response
+[2026-02-16T19:59:43Z] [PIPELINE] [CONVERGE] [INFO] Convergence report written: /Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/convergence/convergence.md
+[2026-02-16T19:59:43Z] [PIPELINE] [CONVERGE] [INFO] Tasks written: 0 tasks to /Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/convergence/tasks.json
+[2026-02-16T19:59:43Z] [PIPELINE] [CONVERGE] [INFO] Convergence complete: 1 issues, 0 tasks
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-16T20:00:12Z] [PIPELINE] [CONVERGE] [INFO] Not enough eligible issues (0) for convergence (minimum: 1)
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-16T20:01:01Z] [PIPELINE] [CONVERGE] [INFO] Converging 1 issues
+[2026-02-16T20:01:01Z] [PIPELINE] [CONVERGE] [INFO] Sandbox mode: returning mock response
+[2026-02-16T20:01:01Z] [PIPELINE] [CONVERGE] [INFO] Convergence report written: /Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/convergence/convergence.md
+[2026-02-16T20:01:01Z] [PIPELINE] [CONVERGE] [INFO] Tasks written: 2 tasks to /Users/yagershome/Desktop/claude-context-monitor/agent-workflow-automation/convergence/tasks.json
+[2026-02-16T20:01:01Z] [PIPELINE] [CONVERGE] [INFO] Convergence complete: 1 issues, 2 tasks
