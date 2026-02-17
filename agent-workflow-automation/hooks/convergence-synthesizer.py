@@ -17,8 +17,8 @@ import os
 import sys
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(_SCRIPT_DIR)
-sys.path.insert(0, _PROJECT_ROOT)
+_PLUGIN_ROOT = os.path.dirname(_SCRIPT_DIR)
+sys.path.insert(0, _PLUGIN_ROOT)
 
 from agents.config import is_convergence_enabled, load_convergence_config
 from agents.arbiter import synthesize

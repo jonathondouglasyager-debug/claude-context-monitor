@@ -3,15 +3,23 @@ Convergence Engine - Configuration Manager
 
 Loads convergence settings from config.json and provides typed accessors
 for budget controls, model selection, sanitizer settings, and feature flags.
+
+Data path resolution (priority order):
+  1. CLAUDE_PROJECT_DIR env var (set by Claude Code when running in a project)
+  2. os.getcwd() (works when hook runs from the target project)
+  3. Plugin root (fallback -- resolves relative to this file)
+
+All runtime data goes to {project_root}/.claude/convergence/ so the plugin
+doesn't pollute its own install directory with per-project data.
 """
 
 import json
 import os
 from typing import Any, Optional
 
-# Resolve project root relative to this file (agents/ is one level deep)
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_CONFIG_PATH = os.path.join(_PROJECT_ROOT, "config.json")
+# Plugin install root -- where the plugin code lives (agents/ is one level deep)
+_PLUGIN_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_CONFIG_PATH = os.path.join(_PLUGIN_ROOT, "config.json")
 
 # Default convergence configuration -- used when config.json lacks the section
 _DEFAULTS = {
@@ -52,8 +60,38 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return result
 
 
+def get_project_root() -> str:
+    """
+    Resolve the target project root directory.
+
+    Priority:
+      1. CLAUDE_PROJECT_DIR env var (most reliable -- set by Claude Code)
+      2. Current working directory (works when hook spawned from project)
+      3. Plugin install root (last resort fallback)
+
+    All paths are resolved through os.path.realpath() to handle symlinks.
+    """
+    # 1. Explicit env var (Claude Code sets this for the active project)
+    env_dir = os.environ.get("CLAUDE_PROJECT_DIR")
+    if env_dir and os.path.isdir(env_dir):
+        return os.path.realpath(env_dir)
+
+    # 2. CWD -- reliable when Claude Code spawns the hook from the project dir
+    cwd = os.getcwd()
+    if cwd and os.path.isdir(cwd):
+        return os.path.realpath(cwd)
+
+    # 3. Plugin root -- data will live alongside plugin code (legacy behavior)
+    return os.path.realpath(_PLUGIN_ROOT)
+
+
+def get_plugin_root() -> str:
+    """Absolute path to the plugin install directory (where code lives)."""
+    return os.path.realpath(_PLUGIN_ROOT)
+
+
 def load_config() -> dict:
-    """Load the full config.json file."""
+    """Load the full config.json file from the plugin root."""
     if not os.path.exists(_CONFIG_PATH):
         return {}
     with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -126,9 +164,20 @@ def get_sanitizer_config() -> dict:
     })
 
 
+# ---------------------------------------------------------------------------
+# Data directory functions -- all resolve to {project_root}/.claude/convergence/
+# ---------------------------------------------------------------------------
+
+def _convergence_base() -> str:
+    """Base directory for all convergence runtime data in the target project."""
+    return os.path.join(get_project_root(), ".claude", "convergence")
+
+
 def get_data_dir() -> str:
-    """Absolute path to the data/ directory."""
-    return os.path.join(_PROJECT_ROOT, "data")
+    """Absolute path to the data/ directory for issues and research."""
+    path = os.path.join(_convergence_base(), "data")
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 def get_research_dir(issue_id: str) -> str:
@@ -139,8 +188,8 @@ def get_research_dir(issue_id: str) -> str:
 
 
 def get_convergence_dir() -> str:
-    """Absolute path to the convergence/ output directory."""
-    path = os.path.join(_PROJECT_ROOT, "convergence")
+    """Absolute path to the convergence output directory."""
+    path = os.path.join(_convergence_base(), "output")
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -150,8 +199,3 @@ def get_archive_dir() -> str:
     path = os.path.join(get_convergence_dir(), "archive")
     os.makedirs(path, exist_ok=True)
     return path
-
-
-def get_project_root() -> str:
-    """Absolute path to the project root."""
-    return _PROJECT_ROOT

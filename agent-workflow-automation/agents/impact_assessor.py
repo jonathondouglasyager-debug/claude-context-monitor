@@ -10,8 +10,8 @@ import os
 import sys
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(_SCRIPT_DIR)
-sys.path.insert(0, _PROJECT_ROOT)
+_PLUGIN_ROOT = os.path.dirname(_SCRIPT_DIR)
+sys.path.insert(0, _PLUGIN_ROOT)
 
 from agents.config import get_data_dir, get_research_dir
 from agents.file_lock import read_jsonl, read_jsonl_by_id

@@ -93,6 +93,10 @@ def run_agent(
         prompt_length=len(sanitized_prompt),
     )
 
+    # Pass project root via env var so child processes resolve paths correctly
+    env = os.environ.copy()
+    env["CLAUDE_PROJECT_DIR"] = get_project_root()
+
     try:
         result = subprocess.run(
             cmd,
@@ -101,6 +105,7 @@ def run_agent(
             text=True,
             timeout=effective_timeout,
             cwd=get_project_root(),
+            env=env,
         )
 
         if result.returncode == 0:

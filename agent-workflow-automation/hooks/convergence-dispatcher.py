@@ -2,7 +2,7 @@
 """
 Convergence Dispatcher Hook
 
-Runs on PostToolUseFailure alongside the existing error-logger.py.
+Runs on PostToolUseFailure. This is the sole error capture hook.
 Captures errors as enriched issue records and writes them to data/issues.jsonl
 using atomic append. Does NOT trigger research -- that is manual (/converge research)
 or deferred to SessionEnd.
@@ -17,12 +17,12 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-# Add project root to path so we can import agents package
+# Add plugin root to path so we can import agents package
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(_SCRIPT_DIR)
-sys.path.insert(0, _PROJECT_ROOT)
+_PLUGIN_ROOT = os.path.dirname(_SCRIPT_DIR)
+sys.path.insert(0, _PLUGIN_ROOT)
 
-from agents.config import is_convergence_enabled, get_data_dir
+from agents.config import is_convergence_enabled, get_data_dir, get_project_root
 from agents.file_lock import atomic_append
 from agents.sanitizer import sanitize_record
 from agents.schema_validator import validate_issue, make_issue_id
@@ -35,7 +35,7 @@ def _get_git_branch() -> str:
         result = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             capture_output=True, text=True, timeout=5,
-            cwd=_PROJECT_ROOT
+            cwd=get_project_root()
         )
         return result.stdout.strip() if result.returncode == 0 else "unknown"
     except Exception:
@@ -48,7 +48,7 @@ def _get_recent_changed_files() -> list[str]:
         result = subprocess.run(
             ["git", "diff", "--name-only", "HEAD~3"],
             capture_output=True, text=True, timeout=5,
-            cwd=_PROJECT_ROOT
+            cwd=get_project_root()
         )
         if result.returncode == 0:
             files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
