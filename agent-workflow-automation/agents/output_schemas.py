@@ -57,13 +57,33 @@ IMPACT_SCHEMA = {
 }
 
 DEBATE_SCHEMA = {
+    # Core fields (required — backward compatible with Phase 4.1)
     "agreements": (list, True),
     "contradictions": (list, True),     # list of {description, better_supported}
     "gaps": (list, True),
     "revised_root_cause": (str, True),
     "revised_fix": (str, True),
     "revised_priority": (str, True),    # P0, P1, P2, P3
+    # Adversarial fields (Phase 4.2 — optional for backward compat)
+    "devil_advocate_challenges": (list, False),   # list of {claim, challenge, survived}
+    "skeptic_concerns": (list, False),            # list of {concern, severity}
+    "confidence_after_debate": (str, False),      # high, medium, low
+    "dissent_notes": (list, False),               # unresolved minority positions
 }
+
+# Sub-schemas for adversarial debate structures (Phase 4.2)
+DEVIL_ADVOCATE_CHALLENGE_SCHEMA = {
+    "claim": (str, True),               # The original finding being challenged
+    "challenge": (str, True),           # The adversarial counterargument
+    "survived": (bool, True),           # Did the original claim survive the challenge?
+}
+
+SKEPTIC_CONCERN_SCHEMA = {
+    "concern": (str, True),             # What the skeptic is concerned about
+    "severity": (str, True),            # high, medium, low
+}
+
+VALID_SKEPTIC_SEVERITY = {"high", "medium", "low"}
 
 TASK_SCHEMA = {
     "title": (str, True),
@@ -290,6 +310,53 @@ def validate_debate_output(data: dict) -> tuple[bool, list[str]]:
     priority = data.get("revised_priority", "")
     if isinstance(priority, str) and priority and priority not in VALID_SEVERITY:
         errors.append(f"[debater] Invalid revised_priority: '{priority}'. Valid: {VALID_SEVERITY}")
+        is_valid = False
+
+    # Phase 4.2: Validate adversarial fields if present
+    challenges = data.get("devil_advocate_challenges")
+    if challenges is not None and isinstance(challenges, list):
+        for i, ch in enumerate(challenges):
+            if isinstance(ch, dict):
+                ch_valid, ch_errors = validate_against_schema(
+                    ch, DEVIL_ADVOCATE_CHALLENGE_SCHEMA,
+                    f"debater.devil_advocate_challenges[{i}]"
+                )
+                if not ch_valid:
+                    errors.extend(ch_errors)
+                    is_valid = False
+            else:
+                errors.append(f"[debater] devil_advocate_challenges[{i}] must be dict")
+                is_valid = False
+
+    concerns = data.get("skeptic_concerns")
+    if concerns is not None and isinstance(concerns, list):
+        for i, sc in enumerate(concerns):
+            if isinstance(sc, dict):
+                sc_valid, sc_errors = validate_against_schema(
+                    sc, SKEPTIC_CONCERN_SCHEMA,
+                    f"debater.skeptic_concerns[{i}]"
+                )
+                if not sc_valid:
+                    errors.extend(sc_errors)
+                    is_valid = False
+                # Validate severity enum
+                sev = sc.get("severity", "")
+                if isinstance(sev, str) and sev and sev not in VALID_SKEPTIC_SEVERITY:
+                    errors.append(
+                        f"[debater] skeptic_concerns[{i}].severity: '{sev}'. "
+                        f"Valid: {VALID_SKEPTIC_SEVERITY}"
+                    )
+                    is_valid = False
+            else:
+                errors.append(f"[debater] skeptic_concerns[{i}] must be dict")
+                is_valid = False
+
+    confidence = data.get("confidence_after_debate", "")
+    if isinstance(confidence, str) and confidence and confidence not in VALID_CONFIDENCE:
+        errors.append(
+            f"[debater] Invalid confidence_after_debate: '{confidence}'. "
+            f"Valid: {VALID_CONFIDENCE}"
+        )
         is_valid = False
 
     return (is_valid, errors)

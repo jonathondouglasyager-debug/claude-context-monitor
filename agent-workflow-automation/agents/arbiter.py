@@ -145,8 +145,10 @@ def _build_issues_block(issues: list[dict]) -> str:
                         block += f"**{label}:**\n{f.read()}\n\n"
 
         # Phase 4: Include structured JSON data for precise arbiter input
+        # Phase 4.2: debate_metrics.json contains adversarial disagreement metrics
         json_files = {
             "debate.json": "Debate (Structured)",
+            "debate_metrics.json": "Debate Metrics (Adversarial)",
             "root_cause.json": "Root Cause (Structured)",
             "solutions.json": "Solutions (Structured)",
             "impact.json": "Impact (Structured)",

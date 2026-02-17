@@ -32,10 +32,12 @@ _DEFAULTS = {
         "max_parallel_agents": 2,
         "max_tokens_per_agent": 4000,
         "max_research_rounds": 3,
+        "debate_rounds": 1,
         "timeout_seconds": 60,
         "model_map": {
             "research": "default",
             "debate": "default",
+            "debate_round2": "default",
             "converge": "default"
         },
         "fallback_model": "haiku"
@@ -128,6 +130,12 @@ def get_max_tokens(stage: str = "research") -> int:
     """Token limit for a given pipeline stage."""
     config = load_convergence_config()
     return config.get("budget", {}).get("max_tokens_per_agent", 4000)
+
+
+def get_debate_rounds() -> int:
+    """Number of adversarial debate rounds (1 = single pass, 2+ = multi-round)."""
+    config = load_convergence_config()
+    return config.get("budget", {}).get("debate_rounds", 1)
 
 
 def get_timeout_seconds() -> int:

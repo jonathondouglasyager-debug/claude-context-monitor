@@ -311,14 +311,26 @@ def _default_mock_response(stage: str) -> str:
             "===JSON_OUTPUT_END==="
         ),
         "debate": (
-            "## Agreements\n"
-            "All agents agree the root cause is a missing dependency.\n\n"
-            "## Contradictions\n"
-            "None significant.\n\n"
-            "## Gaps\n"
-            "No agent checked if this dependency was intentionally removed.\n\n"
+            "## Analyst Assessment\n"
+            "All agents agree the root cause is a missing dependency.\n"
+            "No significant contradictions between research agents.\n"
+            "Gap: no agent checked if this dependency was intentionally removed.\n\n"
+            "## Devil's Advocate Challenges\n"
+            "1. **Claim:** Root cause is a missing dependency.\n"
+            "   **Challenge:** Could be a version mismatch rather than missing entirely.\n"
+            "   **Survived:** Yes — import error clearly states module not found.\n\n"
+            "2. **Claim:** Fix is to reinstall via npm.\n"
+            "   **Challenge:** If the dependency was intentionally removed, reinstalling "
+            "creates tech debt.\n"
+            "   **Survived:** Yes — but with caveat to verify removal was unintentional.\n\n"
+            "## Skeptic Review\n"
+            "1. Evidence is based on a single stack trace — medium confidence.\n"
+            "2. No agent verified the package.json history — low severity.\n\n"
             "## Revised Assessment\n"
-            "High confidence: reinstall the dependency as the primary fix.\n\n"
+            "Root cause: Missing dependency due to incomplete package.json.\n"
+            "Fix: Reinstall the dependency via npm install.\n"
+            "Priority: P2.\n"
+            "Post-debate confidence: medium (evidence is sufficient but single-source).\n\n"
             "===JSON_OUTPUT===\n"
             '{\n'
             '  "agreements": ["Root cause is a missing dependency"],\n'
@@ -326,7 +338,53 @@ def _default_mock_response(stage: str) -> str:
             '  "gaps": ["No agent checked if dependency was intentionally removed"],\n'
             '  "revised_root_cause": "Missing dependency due to incomplete package.json",\n'
             '  "revised_fix": "Reinstall the dependency via npm install",\n'
-            '  "revised_priority": "P2"\n'
+            '  "revised_priority": "P2",\n'
+            '  "devil_advocate_challenges": [\n'
+            '    {"claim": "Root cause is missing dependency", '
+            '"challenge": "Could be version mismatch", "survived": true},\n'
+            '    {"claim": "Fix is npm install", '
+            '"challenge": "Dependency may have been intentionally removed", "survived": true}\n'
+            '  ],\n'
+            '  "skeptic_concerns": [\n'
+            '    {"concern": "Evidence based on single stack trace", "severity": "medium"},\n'
+            '    {"concern": "No verification of package.json history", "severity": "low"}\n'
+            '  ],\n'
+            '  "confidence_after_debate": "medium",\n'
+            '  "dissent_notes": []\n'
+            '}\n'
+            "===JSON_OUTPUT_END==="
+        ),
+        "debate_round2": (
+            "## Challenge Resolutions\n"
+            "1. Version mismatch hypothesis: resolved — error explicitly says module not found.\n"
+            "2. Intentional removal concern: resolved — git log shows accidental deletion.\n\n"
+            "## Concern Responses\n"
+            "1. Single stack trace: additional npm ls output confirms missing package.\n\n"
+            "## Final Assessment\n"
+            "Root cause: Missing dependency (confirmed after 2 rounds).\n"
+            "Fix: npm install the dependency.\n"
+            "Priority: P2.\n"
+            "Post-debate confidence: high (survived adversarial review with additional evidence).\n\n"
+            "===JSON_OUTPUT===\n"
+            '{\n'
+            '  "agreements": ["Root cause is a missing dependency", '
+            '"Dependency was accidentally removed"],\n'
+            '  "contradictions": [],\n'
+            '  "gaps": [],\n'
+            '  "revised_root_cause": "Missing dependency due to accidental deletion from package.json",\n'
+            '  "revised_fix": "Reinstall the dependency via npm install",\n'
+            '  "revised_priority": "P2",\n'
+            '  "devil_advocate_challenges": [\n'
+            '    {"claim": "Root cause is missing dependency", '
+            '"challenge": "Could be version mismatch", "survived": true},\n'
+            '    {"claim": "Fix is npm install", '
+            '"challenge": "Dependency may have been intentionally removed", "survived": true}\n'
+            '  ],\n'
+            '  "skeptic_concerns": [\n'
+            '    {"concern": "Evidence based on single stack trace", "severity": "low"}\n'
+            '  ],\n'
+            '  "confidence_after_debate": "high",\n'
+            '  "dissent_notes": []\n'
             '}\n'
             "===JSON_OUTPUT_END==="
         ),

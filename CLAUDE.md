@@ -6,7 +6,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.1 done, Phase 4.2+ next |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.2 done, Phase 4.3+ next |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
 
 ## Terms
@@ -22,8 +22,10 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - **Plugin root:** agent-workflow-automation/
 - **Pipeline:** Capture → Research (3 agents parallel) → Debate → Converge
 - **Agents:** researcher, solution_finder, impact_assessor, debater, arbiter
+- **Debater:** adversarial 3-perspective analysis (Analyst + Devil's Advocate + Skeptic), optional multi-round debate (config: debate_rounds), computes disagreement metrics (debate_metrics.json)
 - **Runner:** spawns `claude -p` subprocesses (sandbox mode uses mocks); propagates CLAUDE_PROJECT_DIR env var to child processes; extracts structured JSON from agent output (Phase 4)
 - **Output schemas:** agents/output_schemas.py — MAST-inspired inter-agent JSON contracts; agents produce dual markdown+JSON output; extraction via ===JSON_OUTPUT=== delimiters; per-agent validators with enum constraints
+- **Debate metrics:** agents/debate_metrics.py — challenge_survival_rate, skeptic_severity_score, confidence_delta, agreement_kappa; written as debate_metrics.json per issue
 - **Fingerprinting:** agents/fingerprint.py — sha256({type, tool_name, error_normalized, source_file, git_branch}); dedup in dispatcher
 - **Data:** JSONL with filelock (cross-process), schema validation, quarantine for corrupt records, auto-migration for Phase 2 fields
 - **Data location:** {project_root}/.claude/convergence/ (decoupled from plugin install dir as of Phase 1)
@@ -68,10 +70,19 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 20. ✅ schema_validator.py: validate_research_json() validates .json files against agent schemas
 21. ✅ 198/198 tests pass (152 original + 46 new schema tests)
 
-### Phase 4.2-5 — Quality & Portability (NEXT SESSION)
-22. Adversarial debate roles (RedDebate-inspired)
-23. Checkpoint architecture (phase re-execution without re-research)
-24. Plugin install testing + documentation
+### Phase 4.2 — Adversarial Debate Roles ✅ DONE (2026-02-17)
+22. ✅ agents/debater.py: 3-perspective adversarial prompt (Analyst, Devil's Advocate, Skeptic) + optional Round 2 resolution
+23. ✅ agents/debate_metrics.py: challenge_survival_rate, skeptic_severity_score, confidence_delta, agreement_kappa — written as debate_metrics.json
+24. ✅ output_schemas.py: DEBATE_SCHEMA extended with devil_advocate_challenges, skeptic_concerns, confidence_after_debate, dissent_notes (backward-compatible optional fields)
+25. ✅ config.py: debate_rounds setting (default: 1), debate_round2 model_map entry, get_debate_rounds() accessor
+26. ✅ runner.py: updated debate mock with adversarial fields, added debate_round2 mock
+27. ✅ arbiter.py: consumes debate_metrics.json in structured data context
+28. ✅ Round 2 graceful degradation: falls back to Round 1 output if Round 2 agent fails
+29. ✅ 244/244 tests pass (198 original + 46 new adversarial debate tests)
+
+### Phase 4.3-5 — Checkpoints & Portability (NEXT SESSION)
+30. Checkpoint architecture (phase re-execution without re-research)
+31. Plugin install testing + documentation
 
 ## Critical Edge Cases (must address in Phase 4+)
 - ✅ Concurrent sessions: filelock library (Phase 2)
@@ -80,6 +91,8 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - ✅ Corrupt markers: graceful fallback strips partial markers (Phase 3)
 - ✅ Sandbox mode: bridge write skipped in sandbox mode; matcher tests use monkeypatch (Phase 3)
 - ✅ Agent output format drift: strict JSON schemas between agents with per-agent validators (Phase 4.1)
+- ✅ Debate quality: adversarial roles force counterargument consideration; disagreement metrics quantify robustness (Phase 4.2)
+- ✅ Multi-round debate failure: graceful fallback to Round 1 output if Round 2 agent times out (Phase 4.2)
 
 ## Research References (methodology insights)
 - **Grove** (arxiv 2511.17833): hierarchical knowledge trees with applicability predicates — model for CLAUDE.md bridge
