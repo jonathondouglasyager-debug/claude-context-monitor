@@ -29,6 +29,7 @@ from agents.config import (
     load_convergence_config,
     is_sandbox,
 )
+from agents.checkpoint import get_trajectory, save_checkpoint, PHASE_COMPLETED, PHASE_FAILED
 from agents.claude_md_bridge import build_convergence_section, write_to_claude_md
 from agents.file_lock import read_jsonl, update_jsonl_record
 from agents.logger import AgentLogger, PipelineLogger
@@ -163,6 +164,17 @@ def _build_issues_block(issues: list[dict]) -> str:
 
         if json_sections:
             block += "#### Structured Agent Data\n\n" + "\n".join(json_sections)
+
+        # Phase 4.3: Include trajectory data for arbiter analysis
+        trajectory = get_trajectory(issue_id)
+        if trajectory:
+            traj_lines = []
+            for entry in trajectory:
+                traj_lines.append(
+                    f"  - {entry.get('phase', '?')}: {entry.get('status', '?')} "
+                    f"@ {entry.get('timestamp', '?')}"
+                )
+            block += "\n#### Pipeline Trajectory\n" + "\n".join(traj_lines) + "\n"
 
         blocks.append(block)
 

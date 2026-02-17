@@ -2,12 +2,15 @@
 
 ## Me
 Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude Code workflows. Family-first motivation. Values: truth-seeking, practical results.
+- **GitHub:** jonathondouglasyager-debug
 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.2 done, Phase 4.3+ next |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.3 done, Phase 5 (portability) next |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
+
+**Repo:** https://github.com/jonathondouglasyager-debug/claude-context-monitor (pushed 2026-02-17)
 
 ## Terms
 | Term | Meaning |
@@ -33,6 +36,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - **Frontend:** Next.js 16 + React 19 + shadcn/ui dashboard (app/page.tsx)
 - **Hooks:** convergence-dispatcher.py (PostToolUseFailure), convergence-synthesizer.py (SessionEnd), fingerprint-matcher.py (PreToolUse on Bash|Execute)
 - **CLAUDE.md bridge:** agents/claude_md_bridge.py — writes convergence knowledge table to {project_root}/CLAUDE.md with section markers + atomic writes + filelock
+- **Checkpoints:** agents/checkpoint.py — per-issue checkpoint.json in research dir; tracks phase completion + trajectory log; enables resume-from-phase + skip-if-done; verified against output files
 - **Path resolution:** config.get_project_root() — CLAUDE_PROJECT_DIR env var → os.getcwd() → plugin root fallback
 
 ## Active Plan v2 (cross-session plugin refactor)
@@ -80,9 +84,20 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 28. ✅ Round 2 graceful degradation: falls back to Round 1 output if Round 2 agent fails
 29. ✅ 244/244 tests pass (198 original + 46 new adversarial debate tests)
 
-### Phase 4.3-5 — Checkpoints & Portability (NEXT SESSION)
-30. Checkpoint architecture (phase re-execution without re-research)
-31. Plugin install testing + documentation
+### Phase 4.3 — Checkpoint Architecture ✅ DONE (2026-02-17)
+30. ✅ agents/checkpoint.py: per-issue checkpoint.json with phase status + trajectory log (append-only history)
+31. ✅ Pipeline integration: research_single_issue checks can_skip_phase before running; save_checkpoint after each phase
+32. ✅ run_full_pipeline(): orchestrates research→debate→converge with checkpoint-aware skip/resume
+33. ✅ CLI: `python -m agents.pipeline run <id> [--from <phase>] [--force]` + `checkpoint <id>`
+34. ✅ Arbiter trajectory: _build_issues_block includes pipeline trajectory data for analysis
+35. ✅ Output file verification: can_skip_phase checks both checkpoint status AND file existence
+36. ✅ 277/277 tests pass (244 original + 33 new checkpoint tests)
+
+### Phase 5 — Plugin Portability (NEXT SESSION)
+37. Plugin install testing (`claude plugin add`)
+38. Verify $CLAUDE_PLUGIN_ROOT with symlinks
+39. .gitignore for convergence data
+40. README documentation
 
 ## Critical Edge Cases (must address in Phase 4+)
 - ✅ Concurrent sessions: filelock library (Phase 2)
@@ -93,6 +108,8 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - ✅ Agent output format drift: strict JSON schemas between agents with per-agent validators (Phase 4.1)
 - ✅ Debate quality: adversarial roles force counterargument consideration; disagreement metrics quantify robustness (Phase 4.2)
 - ✅ Multi-round debate failure: graceful fallback to Round 1 output if Round 2 agent times out (Phase 4.2)
+- ✅ Pipeline interruption: checkpoint + resume enables re-running from any phase without losing prior work (Phase 4.3)
+- ✅ Output file integrity: can_skip_phase verifies files actually exist, not just checkpoint status (Phase 4.3)
 
 ## Research References (methodology insights)
 - **Grove** (arxiv 2511.17833): hierarchical knowledge trees with applicability predicates — model for CLAUDE.md bridge
