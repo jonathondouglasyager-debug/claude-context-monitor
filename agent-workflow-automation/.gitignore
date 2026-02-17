@@ -13,3 +13,33 @@ node_modules/
 __pycache__/
 *.pyc
 .venv/
+*.egg-info/
+
+# Convergence engine runtime data (project-scoped, generated at runtime)
+# The .claude/convergence/ directory is created per-project when the plugin runs.
+# We ignore it here because this is the plugin source repo, not a target project.
+.claude/convergence/
+
+# Legacy data directories (pre-Phase 1 layout, kept for backward compat)
+data/issues.jsonl
+data/issues.jsonl.lock
+data/agent_activity.log
+data/agent_activity.jsonl
+data/research/
+!data/research/.gitkeep
+data/convergence/
+!data/convergence/.gitkeep
+
+# Legacy convergence output (pre-Phase 1)
+convergence/archive/
+convergence/convergence.md
+convergence/tasks.json
+
+# Lock files (runtime artifacts)
+*.lock
+!pnpm-lock.yaml
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
