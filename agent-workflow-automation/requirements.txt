@@ -1,0 +1,2 @@
+filelock>=3.12
+pytest>=7.0

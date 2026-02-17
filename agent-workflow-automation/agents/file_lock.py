@@ -1,16 +1,21 @@
 """
 Convergence Engine - Atomic File Operations
 
-Provides atomic append for JSONL files using temp-file-rename pattern
-with fcntl file locking to prevent concurrent write corruption.
+Provides atomic append and update for JSONL files using the `filelock`
+library for cross-process safe locking. Replaces previous fcntl-based
+implementation which was advisory-only and insufficient for concurrent
+Claude sessions.
+
+Phase 2 upgrade: filelock library with 20 retries, 2s max backoff cap.
 """
 
-import fcntl
 import json
 import os
 import tempfile
 import time
 from typing import Optional
+
+from filelock import FileLock, Timeout
 
 
 class FileLockError(Exception):
@@ -23,25 +28,33 @@ class AtomicAppendError(Exception):
     pass
 
 
-def atomic_append(filepath: str, record: dict, max_retries: int = 10, retry_delay: float = 0.1) -> None:
+# Lock configuration
+_MAX_RETRIES = 20
+_MAX_BACKOFF = 2.0  # seconds
+_LOCK_TIMEOUT = 10  # seconds per attempt
+
+
+def _get_lock(filepath: str) -> FileLock:
+    """
+    Get a FileLock instance for the given data file.
+
+    Uses a .lock sidecar file in the same directory.
+    """
+    lock_path = filepath + ".lock"
+    return FileLock(lock_path, timeout=_LOCK_TIMEOUT)
+
+
+def atomic_append(filepath: str, record: dict, max_retries: int = _MAX_RETRIES, retry_delay: float = 0.1) -> None:
     """
     Atomically append a JSON record as a single line to a JSONL file.
 
-    Strategy:
-    1. Acquire an exclusive lock on the target file (or a .lock sidecar)
-    2. Validate the record serializes to valid JSON
-    3. Write to a temp file in the same directory
-    4. Read existing content, append new line, write back
-    5. Release lock
-
-    Using flock + direct append (not rename) because JSONL is append-only
-    and rename would lose existing records.
+    Uses filelock for cross-process safe locking.
 
     Args:
         filepath: Path to the .jsonl file
         record: Dictionary to serialize and append
         max_retries: Number of lock acquisition retries
-        retry_delay: Seconds between retries (doubles each attempt)
+        retry_delay: Initial seconds between retries (doubles each attempt, capped at 2s)
     """
     # Validate JSON serialization first (fail fast before any I/O)
     try:
@@ -52,56 +65,29 @@ def atomic_append(filepath: str, record: dict, max_retries: int = 10, retry_dela
     # Ensure parent directory exists
     os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else ".", exist_ok=True)
 
-    # Use a sidecar lock file to avoid issues with locking the data file itself
-    lock_path = filepath + ".lock"
-
-    attempt = 0
+    lock = _get_lock(filepath)
     current_delay = retry_delay
 
-    while attempt < max_retries:
-        lock_fd = None
+    for attempt in range(max_retries):
         try:
-            # Open or create lock file
-            lock_fd = open(lock_path, "w")
+            with lock:
+                with open(filepath, "a", encoding="utf-8") as data_fd:
+                    data_fd.write(line + "\n")
+                    data_fd.flush()
+                    os.fsync(data_fd.fileno())
+                return  # Success
 
-            # Try to acquire exclusive lock (non-blocking)
-            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-
-            # Lock acquired -- append the record
-            with open(filepath, "a", encoding="utf-8") as data_fd:
-                data_fd.write(line + "\n")
-                data_fd.flush()
-                os.fsync(data_fd.fileno())
-
-            # Success -- release lock and return
-            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
-            lock_fd.close()
-            return
-
-        except BlockingIOError:
-            # Lock is held by another process -- retry with backoff
-            if lock_fd:
-                lock_fd.close()
-            attempt += 1
-            if attempt < max_retries:
+        except Timeout:
+            if attempt < max_retries - 1:
                 time.sleep(current_delay)
-                current_delay *= 2  # Exponential backoff
-            continue
-
+                current_delay = min(current_delay * 2, _MAX_BACKOFF)
+                continue
+            raise FileLockError(
+                f"Could not acquire lock on {filepath}.lock after {max_retries} retries. "
+                f"Another process may be holding the lock."
+            )
         except Exception as e:
-            # Unexpected error -- clean up and raise
-            if lock_fd:
-                try:
-                    fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
-                    lock_fd.close()
-                except Exception:
-                    pass
             raise AtomicAppendError(f"Failed to append to {filepath}: {e}")
-
-    raise FileLockError(
-        f"Could not acquire lock on {lock_path} after {max_retries} retries. "
-        f"Another process may be holding the lock."
-    )
 
 
 def read_jsonl(filepath: str) -> list[dict]:
@@ -155,6 +141,8 @@ def update_jsonl_record(filepath: str, record_id: str, updates: dict, id_field: 
     """
     Update a specific record in a JSONL file by rewriting the file atomically.
 
+    Uses filelock for cross-process safety.
+
     Args:
         filepath: Path to JSONL file
         record_id: ID of record to update
@@ -167,55 +155,47 @@ def update_jsonl_record(filepath: str, record_id: str, updates: dict, id_field: 
     if not os.path.exists(filepath):
         return False
 
-    lock_path = filepath + ".lock"
-    lock_fd = None
+    lock = _get_lock(filepath)
 
     try:
-        lock_fd = open(lock_path, "w")
-        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+        with lock:
+            records = []
+            found = False
 
-        records = []
-        found = False
+            with open(filepath, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                        if record.get(id_field) == record_id:
+                            record.update(updates)
+                            found = True
+                        records.append(record)
+                    except json.JSONDecodeError:
+                        records.append(None)  # Preserve line count
 
-        with open(filepath, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
+            if found:
+                # Write to temp file, then rename for atomicity
+                dir_name = os.path.dirname(filepath) or "."
+                tmp_fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".jsonl.tmp")
                 try:
-                    record = json.loads(line)
-                    if record.get(id_field) == record_id:
-                        record.update(updates)
-                        found = True
-                    records.append(record)
-                except json.JSONDecodeError:
-                    records.append(None)  # Preserve line count
+                    with os.fdopen(tmp_fd, "w", encoding="utf-8") as tmp_f:
+                        for record in records:
+                            if record is not None:
+                                tmp_f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                    os.replace(tmp_path, filepath)
+                except Exception:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                    raise
 
-        if found:
-            # Write to temp file, then rename for atomicity
-            dir_name = os.path.dirname(filepath) or "."
-            tmp_fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".jsonl.tmp")
-            try:
-                with os.fdopen(tmp_fd, "w", encoding="utf-8") as tmp_f:
-                    for record in records:
-                        if record is not None:
-                            tmp_f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
-                os.replace(tmp_path, filepath)
-            except Exception:
-                # Clean up temp file on failure
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-                raise
+            return found
 
-        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
-        lock_fd.close()
-        return found
-
+    except Timeout:
+        raise FileLockError(f"Could not acquire lock to update {filepath}")
+    except FileLockError:
+        raise
     except Exception as e:
-        if lock_fd:
-            try:
-                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
-                lock_fd.close()
-            except Exception:
-                pass
         raise AtomicAppendError(f"Failed to update record in {filepath}: {e}")

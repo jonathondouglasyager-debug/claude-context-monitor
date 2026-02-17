@@ -6,7 +6,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks | Active — plan v2 committed, execution starts next session |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks | Active — Phase 2 done, Phase 3 next |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
 
 ## Terms
@@ -22,30 +22,36 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - **Plugin root:** agent-workflow-automation/
 - **Pipeline:** Capture → Research (3 agents parallel) → Debate → Converge
 - **Agents:** researcher, solution_finder, impact_assessor, debater, arbiter
-- **Runner:** spawns `claude -p` subprocesses (sandbox mode uses mocks)
-- **Data:** JSONL with file locking, schema validation, quarantine for corrupt records
+- **Runner:** spawns `claude -p` subprocesses (sandbox mode uses mocks); propagates CLAUDE_PROJECT_DIR env var to child processes
+- **Fingerprinting:** agents/fingerprint.py — sha256({type, tool_name, error_normalized, source_file, git_branch}); dedup in dispatcher
+- **Data:** JSONL with filelock (cross-process), schema validation, quarantine for corrupt records, auto-migration for Phase 2 fields
+- **Data location:** {project_root}/.claude/convergence/ (decoupled from plugin install dir as of Phase 1)
 - **Security:** sanitizer strips paths, tokens, JWT, API keys, usernames, env vars
 - **Frontend:** Next.js 16 + React 19 + shadcn/ui dashboard (app/page.tsx)
-- **Hooks (actual):** convergence-dispatcher.py (PostToolUseFailure), convergence-synthesizer.py (SessionEnd)
-- **CRITICAL BUG:** config.py hardcodes data paths to plugin root, not project CWD
+- **Hooks:** convergence-dispatcher.py (PostToolUseFailure), convergence-synthesizer.py (SessionEnd)
+- **Path resolution:** config.get_project_root() — CLAUDE_PROJECT_DIR env var → os.getcwd() → plugin root fallback
 
 ## Active Plan v2 (cross-session plugin refactor)
 → Full plan: memory/projects/convergence-engine-refactor-plan-v2.md
 
-### Phase 1 — Cleanup & Foundation (NEXT SESSION)
-1. Fix plugin.json: reference actual hooks, remove phantom entries
-2. Move misplaced React hooks out of hooks/ dir
-3. Data path decoupling: config.py uses CLAUDE_PROJECT_DIR env var → getcwd fallback → plugin root fallback; all data to {project}/.claude/convergence/
+### Phase 1 — Cleanup & Foundation ✅ DONE (2026-02-17)
+1. ✅ plugin.json: removed phantom hooks, only references convergence-dispatcher + convergence-synthesizer
+2. ✅ React hooks: imports updated to @/components/ui/, duplicates deleted from hooks/
+3. ✅ config.py: 3-tier project root (CLAUDE_PROJECT_DIR → cwd → plugin root); data to {project}/.claude/convergence/
+4. ✅ runner.py: propagates CLAUDE_PROJECT_DIR to subprocess env
+5. ✅ All _PROJECT_ROOT → _PLUGIN_ROOT for clarity (only used for sys.path)
+6. ✅ 59/59 tests pass
 
-### Phase 2 — Fingerprinting & Dedup
-4. Create agents/fingerprint.py (multi-field sha256, normalize error messages)
-5. Schema migration: add fingerprint, occurrence_count, first_seen, last_seen (optional fields, auto-migrate on read)
-6. Dedup in dispatcher: check fingerprint before creating new issue
-7. Harden file locking: filelock library (cross-process safe)
+### Phase 2 — Fingerprinting & Dedup ✅ DONE (2026-02-17)
+4. ✅ agents/fingerprint.py: multi-field sha256 + normalize_error_message (strips paths, timestamps, UUIDs, hashes, PIDs, addrs)
+5. ✅ Schema migration: fingerprint, occurrence_count, first_seen, last_seen (optional fields, auto-migrate via migrate_issue())
+6. ✅ Dedup in dispatcher: compute fingerprint → find_duplicate → increment occurrence_count or append new
+7. ✅ file_lock.py: replaced fcntl with filelock library (cross-process safe, 20 retries, 2s max backoff)
+8. ✅ 101/101 tests pass (59 original + 42 new fingerprint tests)
 
-### Phase 3 — CLAUDE.md Bridge
-8. Arbiter writes convergence knowledge to CLAUDE.md with section markers + atomic writes
-9. Session-start pattern matcher hook: short-circuit re-research for known fingerprints (~15-20k token savings per match)
+### Phase 3 — CLAUDE.md Bridge (NEXT SESSION)
+9. Arbiter writes convergence knowledge to CLAUDE.md with section markers + atomic writes
+10. Session-start pattern matcher hook: short-circuit re-research for known fingerprints (~15-20k token savings per match)
 
 ### Phase 4-5 — Quality & Portability (stretch)
 10. Agent output JSON schemas (MAST-inspired inter-agent contract)
@@ -53,16 +59,11 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 12. Checkpoint architecture (phase re-execution without re-research)
 13. Plugin install testing + documentation
 
-## Resolved Issues (2026-02-17)
-- ✅ hooks/error-logger.py, error-curator.py, command-validator.py, fix-tracker.py — NOT missing functionality. convergence-dispatcher.py and convergence-synthesizer.py replaced them. plugin.json is just out of sync.
-- ✅ hooks/use-mobile.tsx and hooks/use-toast.ts — React hooks, duplicates of components/ui/ versions. Delete from hooks/, update imports if needed.
-
-## Critical Edge Cases (must address in Phase 1-2)
-- CWD resolution: use CLAUDE_PROJECT_DIR env var, not os.getcwd() alone
-- Concurrent sessions: fcntl insufficient → use filelock library
-- Schema migration: auto-migrate legacy records missing fingerprint field
-- CLAUDE.md writes: section markers + atomic write to prevent user edit loss
-- Sandbox mode: new components need mock paths for existing tests
+## Critical Edge Cases (must address in Phase 3+)
+- ✅ Concurrent sessions: filelock library (Phase 2)
+- ✅ Schema migration: migrate_issue() auto-populates Phase 2 fields (Phase 2)
+- CLAUDE.md writes: section markers + atomic write to prevent user edit loss (Phase 3)
+- Sandbox mode: new components need mock paths for existing tests (ongoing)
 
 ## Research References (methodology insights)
 - **Grove** (arxiv 2511.17833): hierarchical knowledge trees with applicability predicates — model for CLAUDE.md bridge

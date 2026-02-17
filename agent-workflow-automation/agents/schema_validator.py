@@ -13,6 +13,7 @@ from typing import Optional
 
 from agents.config import get_data_dir
 from agents.file_lock import atomic_append
+from agents.fingerprint import compute_fingerprint
 
 
 # Required fields for an issue record
@@ -47,6 +48,15 @@ _VALID_TYPES = {
     "design",
     "manual",
     "unknown",
+}
+
+# Optional fields added in Phase 2 (fingerprinting & dedup)
+# These are auto-populated on read if missing (migration on access)
+_PHASE2_OPTIONAL_FIELDS = {
+    "fingerprint": str,        # sha256 hex digest
+    "occurrence_count": int,   # how many times this error has been seen
+    "first_seen": str,         # ISO 8601 timestamp of first occurrence
+    "last_seen": str,          # ISO 8601 timestamp of most recent occurrence
 }
 
 # Required sections in research output files
@@ -208,6 +218,102 @@ def validate_all_issues(issues_path: Optional[str] = None) -> dict:
         tmp_path = issues_path + ".validated.tmp"
         with open(tmp_path, "w", encoding="utf-8") as f:
             for record in valid_records:
+                f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+        os.replace(tmp_path, issues_path)
+
+    return summary
+
+
+def migrate_issue(record: dict) -> dict:
+    """
+    Auto-migrate a legacy issue record to include Phase 2 fields.
+
+    Adds fingerprint, occurrence_count, first_seen, last_seen if missing.
+    This is a non-destructive operation — only adds fields, never removes.
+
+    Args:
+        record: Issue record dict (may or may not have Phase 2 fields)
+
+    Returns:
+        Record with Phase 2 fields populated (mutates and returns same dict)
+    """
+    migrated = False
+
+    # Add fingerprint if missing
+    if "fingerprint" not in record:
+        record["fingerprint"] = compute_fingerprint(record)
+        migrated = True
+
+    # Add occurrence_count if missing (first time = 1)
+    if "occurrence_count" not in record:
+        record["occurrence_count"] = 1
+        migrated = True
+
+    # Add first_seen / last_seen from timestamp if missing
+    timestamp = record.get("timestamp", datetime.now(timezone.utc).isoformat())
+    if "first_seen" not in record:
+        record["first_seen"] = timestamp
+        migrated = True
+    if "last_seen" not in record:
+        record["last_seen"] = timestamp
+        migrated = True
+
+    return record
+
+
+def migrate_issues_file(issues_path: Optional[str] = None) -> dict:
+    """
+    Migrate an entire issues.jsonl file in-place, adding Phase 2 fields
+    to all records that are missing them.
+
+    Uses atomic write (temp file + os.replace) for safety.
+
+    Args:
+        issues_path: Path to issues.jsonl (defaults to data/issues.jsonl)
+
+    Returns:
+        Summary: {"total": count, "migrated": count, "already_current": count}
+    """
+    if issues_path is None:
+        issues_path = os.path.join(get_data_dir(), "issues.jsonl")
+
+    summary = {"total": 0, "migrated": 0, "already_current": 0}
+
+    if not os.path.exists(issues_path):
+        return summary
+
+    records = []
+    with open(issues_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+                summary["total"] += 1
+
+                needs_migration = any(
+                    field not in record
+                    for field in _PHASE2_OPTIONAL_FIELDS
+                )
+
+                migrate_issue(record)
+
+                if needs_migration:
+                    summary["migrated"] += 1
+                else:
+                    summary["already_current"] += 1
+
+                records.append(record)
+            except json.JSONDecodeError:
+                # Preserve corrupt lines as-is (handled by quarantine elsewhere)
+                continue
+
+    # Atomic rewrite
+    if summary["migrated"] > 0:
+        tmp_path = issues_path + ".migration.tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            for record in records:
                 f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
         os.replace(tmp_path, issues_path)
 

@@ -23,9 +23,10 @@ _PLUGIN_ROOT = os.path.dirname(_SCRIPT_DIR)
 sys.path.insert(0, _PLUGIN_ROOT)
 
 from agents.config import is_convergence_enabled, get_data_dir, get_project_root
-from agents.file_lock import atomic_append
+from agents.file_lock import atomic_append, read_jsonl, update_jsonl_record
+from agents.fingerprint import compute_fingerprint, find_duplicate
 from agents.sanitizer import sanitize_record
-from agents.schema_validator import validate_issue, make_issue_id
+from agents.schema_validator import validate_issue, make_issue_id, migrate_issue
 from agents.logger import AgentLogger
 
 
@@ -109,11 +110,12 @@ def main():
         description += f"\n\nTool input: {input_summary}"
 
     # Create the issue record
+    now = datetime.now(timezone.utc).isoformat()
     issue_id = make_issue_id()
     issue = {
         "id": issue_id,
         "type": _classify_error_type(tool_name, str(error)),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": now,
         "description": description,
         "status": "captured",
         "source": "hook:PostToolUseFailure",
@@ -123,6 +125,12 @@ def main():
         "working_directory": os.getcwd(),
         "raw_error": str(error)[:2000],
     }
+
+    # Compute fingerprint and populate Phase 2 fields
+    issue["fingerprint"] = compute_fingerprint(issue)
+    issue["occurrence_count"] = 1
+    issue["first_seen"] = now
+    issue["last_seen"] = now
 
     # Initialize logger
     log = AgentLogger(issue_id, "CAPTURE")
@@ -138,14 +146,43 @@ def main():
     # Sanitize sensitive data
     sanitized_issue = sanitize_record(issue)
 
-    # Atomic append to issues.jsonl
+    # Check for duplicate fingerprint in existing issues
     issues_path = os.path.join(get_data_dir(), "issues.jsonl")
     try:
         os.makedirs(get_data_dir(), exist_ok=True)
-        atomic_append(issues_path, sanitized_issue)
-        log.info(f"Issue captured: {tool_name} failure", tool=tool_name)
+
+        existing_issues = read_jsonl(issues_path)
+        # Auto-migrate legacy records so they have fingerprints for comparison
+        for existing in existing_issues:
+            migrate_issue(existing)
+
+        duplicate = find_duplicate(sanitized_issue, existing_issues)
+
+        if duplicate:
+            # Dedup: increment occurrence count and update last_seen on existing record
+            dup_id = duplicate["id"]
+            new_count = duplicate.get("occurrence_count", 1) + 1
+            update_jsonl_record(issues_path, dup_id, {
+                "occurrence_count": new_count,
+                "last_seen": now,
+            })
+            log.info(
+                f"Dedup: matched existing {dup_id} (count={new_count})",
+                tool=tool_name,
+            )
+        else:
+            # New unique error — append
+            atomic_append(issues_path, sanitized_issue)
+            log.info(f"Issue captured: {tool_name} failure", tool=tool_name)
+
     except Exception as e:
-        log.error(f"Failed to write issue: {e}")
+        # Fallback: if dedup fails, still try to capture the issue
+        log.error(f"Dedup check failed, falling back to append: {e}")
+        try:
+            atomic_append(issues_path, sanitized_issue)
+            log.info(f"Issue captured (fallback): {tool_name} failure", tool=tool_name)
+        except Exception as e2:
+            log.error(f"Failed to write issue: {e2}")
 
     # Always allow -- we are an observer, not a blocker
     print(json.dumps({"result": "allow"}))
