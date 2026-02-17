@@ -16,7 +16,7 @@ sys.path.insert(0, _PLUGIN_ROOT)
 from agents.config import get_data_dir, get_research_dir
 from agents.file_lock import read_jsonl, read_jsonl_by_id
 from agents.logger import AgentLogger
-from agents.runner import run_agent, write_research_output
+from agents.runner import run_agent, write_research_output, write_research_json
 from agents.sanitizer import sanitize_context
 
 
@@ -62,6 +62,23 @@ Reference specific historical issues if similar ones exist.
 ## Priority Recommendation
 Combine severity, scope, and frequency into a priority recommendation.
 State whether this should be fixed now, soon, or later, and why.
+
+## Structured Output
+
+After your markdown analysis, include a JSON block with the following format:
+
+===JSON_OUTPUT===
+{{
+  "severity": "P0|P1|P2|P3",
+  "severity_reasoning": "justification",
+  "scope": "isolated|module|system",
+  "scope_detail": "what is affected",
+  "frequency": "first|recurring|escalating",
+  "frequency_detail": "details on recurrence",
+  "priority": "now|soon|later",
+  "priority_reasoning": "why this priority level"
+}}
+===JSON_OUTPUT_END===
 """
 
 
@@ -135,9 +152,17 @@ def assess_impact(issue_id: str) -> bool:
         log.error(f"Impact assessor failed: {result.error}")
         return False
 
-    # Write output
+    # Write output (markdown)
     research_dir = get_research_dir(issue_id)
-    success = write_research_output(research_dir, "impact.md", result.output, log)
+    success = write_research_output(research_dir, "impact.md", result.markdown_output, log)
+
+    # Write structured JSON if available (Phase 4)
+    if result.structured_output is not None:
+        write_research_json(
+            research_dir, "impact.json", result.structured_output, "impact_assessor", log
+        )
+    else:
+        log.warn("No structured JSON in impact_assessor output (markdown-only fallback)")
 
     if success:
         log.info("Impact assessment complete")

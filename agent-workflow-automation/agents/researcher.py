@@ -16,7 +16,7 @@ sys.path.insert(0, _PLUGIN_ROOT)
 from agents.config import get_data_dir, get_research_dir
 from agents.file_lock import read_jsonl_by_id
 from agents.logger import AgentLogger
-from agents.runner import run_agent, write_research_output
+from agents.runner import run_agent, write_research_output, write_research_json
 from agents.sanitizer import sanitize_context
 
 
@@ -55,6 +55,20 @@ State: high, medium, or low -- with a brief justification.
 ## Related Patterns
 Note any patterns this error shares with common development issues
 (dependency problems, state management bugs, configuration drift, etc.)
+
+## Structured Output
+
+After your markdown analysis, include a JSON block with the following format:
+
+===JSON_OUTPUT===
+{{
+  "hypothesis": "your primary hypothesis as a string",
+  "evidence": ["evidence point 1", "evidence point 2"],
+  "confidence": "high|medium|low",
+  "confidence_reasoning": "brief justification for confidence level",
+  "related_patterns": ["pattern 1", "pattern 2"]
+}}
+===JSON_OUTPUT_END===
 """
 
 
@@ -102,9 +116,17 @@ def research_issue(issue_id: str) -> bool:
         log.error(f"Research agent failed: {result.error}")
         return False
 
-    # Write output
+    # Write output (markdown)
     research_dir = get_research_dir(issue_id)
-    success = write_research_output(research_dir, "root_cause.md", result.output, log)
+    success = write_research_output(research_dir, "root_cause.md", result.markdown_output, log)
+
+    # Write structured JSON if available (Phase 4)
+    if result.structured_output is not None:
+        write_research_json(
+            research_dir, "root_cause.json", result.structured_output, "researcher", log
+        )
+    else:
+        log.warn("No structured JSON in researcher output (markdown-only fallback)")
 
     if success:
         log.info("Root cause analysis complete")

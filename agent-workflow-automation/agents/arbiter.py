@@ -101,9 +101,23 @@ Issues analyzed: N | Resolved: M | Pending: K
 """
 
 
+def _read_json_file(filepath: str) -> dict | list | None:
+    """Read and parse a JSON file, returning None on failure."""
+    if not os.path.exists(filepath):
+        return None
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, Exception):
+        return None
+
+
 def _build_issues_block(issues: list[dict]) -> str:
     """
     Build the context block containing all issue research for the arbiter.
+
+    Phase 4: includes structured JSON data alongside markdown when available,
+    giving the arbiter precise fields to work with.
     """
     blocks = []
 
@@ -129,6 +143,24 @@ def _build_issues_block(issues: list[dict]) -> str:
                     with open(filepath, "r", encoding="utf-8") as f:
                         label = filename.replace(".md", "").replace("_", " ").title()
                         block += f"**{label}:**\n{f.read()}\n\n"
+
+        # Phase 4: Include structured JSON data for precise arbiter input
+        json_files = {
+            "debate.json": "Debate (Structured)",
+            "root_cause.json": "Root Cause (Structured)",
+            "solutions.json": "Solutions (Structured)",
+            "impact.json": "Impact (Structured)",
+        }
+        json_sections = []
+        for json_file, label in json_files.items():
+            data = _read_json_file(os.path.join(research_dir, json_file))
+            if data is not None:
+                json_sections.append(
+                    f"**{label}:**\n```json\n{json.dumps(data, indent=2)}\n```\n"
+                )
+
+        if json_sections:
+            block += "#### Structured Agent Data\n\n" + "\n".join(json_sections)
 
         blocks.append(block)
 

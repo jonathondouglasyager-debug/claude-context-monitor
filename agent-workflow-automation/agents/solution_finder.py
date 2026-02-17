@@ -16,7 +16,7 @@ sys.path.insert(0, _PLUGIN_ROOT)
 from agents.config import get_data_dir, get_research_dir
 from agents.file_lock import read_jsonl_by_id
 from agents.logger import AgentLogger
-from agents.runner import run_agent, write_research_output
+from agents.runner import run_agent, write_research_output, write_research_json
 from agents.sanitizer import sanitize_context
 
 
@@ -57,6 +57,21 @@ Which solution you recommend and why.
 
 ## Implementation Steps
 Numbered, specific steps to implement the recommended fix.
+
+## Structured Output
+
+After your markdown analysis, include a JSON block with the following format:
+
+===JSON_OUTPUT===
+{{
+  "solutions": [
+    {{"title": "short title", "description": "what to do", "tradeoffs": {{"risk": "low|medium|high", "complexity": "low|medium|high", "side_effects": "description"}}}}
+  ],
+  "recommended_index": 0,
+  "recommendation_reasoning": "why this solution is best",
+  "implementation_steps": ["step 1", "step 2"]
+}}
+===JSON_OUTPUT_END===
 """
 
 
@@ -123,9 +138,17 @@ def find_solutions(issue_id: str) -> bool:
         log.error(f"Solution finder failed: {result.error}")
         return False
 
-    # Write output
+    # Write output (markdown)
     research_dir = get_research_dir(issue_id)
-    success = write_research_output(research_dir, "solutions.md", result.output, log)
+    success = write_research_output(research_dir, "solutions.md", result.markdown_output, log)
+
+    # Write structured JSON if available (Phase 4)
+    if result.structured_output is not None:
+        write_research_json(
+            research_dir, "solutions.json", result.structured_output, "solution_finder", log
+        )
+    else:
+        log.warn("No structured JSON in solution_finder output (markdown-only fallback)")
 
     if success:
         log.info("Solution research complete")

@@ -14,6 +14,7 @@ from typing import Optional
 from agents.config import get_data_dir
 from agents.file_lock import atomic_append
 from agents.fingerprint import compute_fingerprint
+from agents.output_schemas import validate_agent_output
 
 
 # Required fields for an issue record
@@ -59,11 +60,19 @@ _PHASE2_OPTIONAL_FIELDS = {
     "last_seen": str,          # ISO 8601 timestamp of most recent occurrence
 }
 
-# Required sections in research output files
+# Required sections in research output files (markdown validation)
 _RESEARCH_REQUIRED_SECTIONS = {
     "root_cause.md": ["## Hypothesis", "## Confidence"],
     "solutions.md": ["## Recommended Approach"],
     "impact.md": ["## Severity", "## Priority Recommendation"],
+}
+
+# Phase 4: JSON file → agent name mapping for structured validation
+_RESEARCH_JSON_AGENTS = {
+    "root_cause.json": "researcher",
+    "solutions.json": "solution_finder",
+    "impact.json": "impact_assessor",
+    "debate.json": "debater",
 }
 
 
@@ -147,6 +156,52 @@ def validate_research(research_dir: str) -> tuple[bool, list[str]]:
         for section in required_sections:
             if section not in content:
                 errors.append(f"{filename} missing required section: '{section}'")
+
+    return (len(errors) == 0, errors)
+
+
+def validate_research_json(research_dir: str) -> tuple[bool, list[str]]:
+    """
+    Validate structured JSON output files from research agents (Phase 4).
+
+    Checks that JSON files exist, are valid JSON, and conform to their
+    agent's output schema. This is complementary to validate_research()
+    which checks markdown files.
+
+    Args:
+        research_dir: Path to data/research/{issue_id}/
+
+    Returns:
+        Tuple of (is_valid, list_of_errors).
+        Returns (True, []) if no JSON files exist (backward-compatible).
+    """
+    errors = []
+
+    if not os.path.isdir(research_dir):
+        return (True, [])  # No dir = nothing to validate (not an error)
+
+    found_any = False
+    for json_file, agent_name in _RESEARCH_JSON_AGENTS.items():
+        filepath = os.path.join(research_dir, json_file)
+        if not os.path.exists(filepath):
+            continue
+
+        found_any = True
+
+        # Parse JSON
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            errors.append(f"{json_file}: Invalid JSON — {e}")
+            continue
+
+        # Validate against schema
+        if isinstance(data, dict):
+            is_valid, schema_errors = validate_agent_output(agent_name, data)
+            if not is_valid:
+                for err in schema_errors:
+                    errors.append(f"{json_file}: {err}")
 
     return (len(errors) == 0, errors)
 

@@ -6,7 +6,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 ## Projects
 | Name | What | Status |
 |------|------|--------|
-| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 3 done, Phase 4 next |
+| **convergence-engine** | Multi-agent error learning plugin for Claude Code — captures errors, researches root causes via parallel agents, debates findings, produces convergence reports with tasks, bridges knowledge to CLAUDE.md | Active — Phase 4.1 done, Phase 4.2+ next |
 | **context-monitor** | Chrome extension for estimating token usage on claude.ai | Shelved (basic, fragile selectors) |
 
 ## Terms
@@ -22,7 +22,8 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - **Plugin root:** agent-workflow-automation/
 - **Pipeline:** Capture → Research (3 agents parallel) → Debate → Converge
 - **Agents:** researcher, solution_finder, impact_assessor, debater, arbiter
-- **Runner:** spawns `claude -p` subprocesses (sandbox mode uses mocks); propagates CLAUDE_PROJECT_DIR env var to child processes
+- **Runner:** spawns `claude -p` subprocesses (sandbox mode uses mocks); propagates CLAUDE_PROJECT_DIR env var to child processes; extracts structured JSON from agent output (Phase 4)
+- **Output schemas:** agents/output_schemas.py — MAST-inspired inter-agent JSON contracts; agents produce dual markdown+JSON output; extraction via ===JSON_OUTPUT=== delimiters; per-agent validators with enum constraints
 - **Fingerprinting:** agents/fingerprint.py — sha256({type, tool_name, error_normalized, source_file, git_branch}); dedup in dispatcher
 - **Data:** JSONL with filelock (cross-process), schema validation, quarantine for corrupt records, auto-migration for Phase 2 fields
 - **Data location:** {project_root}/.claude/convergence/ (decoupled from plugin install dir as of Phase 1)
@@ -58,11 +59,19 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 13. ✅ plugin.json v3.0.0: added PreToolUse hook for fingerprint-matcher
 14. ✅ 152/152 tests pass (101 original + 43 bridge tests + 8 matcher tests)
 
-### Phase 4-5 — Quality & Portability (NEXT SESSION)
-10. Agent output JSON schemas (MAST-inspired inter-agent contract)
-11. Adversarial debate roles (RedDebate-inspired)
-12. Checkpoint architecture (phase re-execution without re-research)
-13. Plugin install testing + documentation
+### Phase 4.1 — Agent Output JSON Schemas ✅ DONE (2026-02-17)
+15. ✅ agents/output_schemas.py: JSON schemas for researcher, solution_finder, impact_assessor, debater, task — with enum validation (confidence, severity, scope, frequency, priority, complexity)
+16. ✅ Dual output: agents produce markdown + ===JSON_OUTPUT=== delimited JSON; runner extracts structured_output into AgentResult
+17. ✅ All 4 research agents + debater write .json alongside .md files; write_research_json validates against schema before write
+18. ✅ Debater consumes upstream .json files for precise cross-agent comparison; arbiter includes structured JSON in convergence context
+19. ✅ Mock responses updated with valid JSON blocks; backward-compatible (graceful fallback if no JSON in output)
+20. ✅ schema_validator.py: validate_research_json() validates .json files against agent schemas
+21. ✅ 198/198 tests pass (152 original + 46 new schema tests)
+
+### Phase 4.2-5 — Quality & Portability (NEXT SESSION)
+22. Adversarial debate roles (RedDebate-inspired)
+23. Checkpoint architecture (phase re-execution without re-research)
+24. Plugin install testing + documentation
 
 ## Critical Edge Cases (must address in Phase 4+)
 - ✅ Concurrent sessions: filelock library (Phase 2)
@@ -70,7 +79,7 @@ Jonathon (jonathondouglasyager@gmail.com). Building automation tools for Claude 
 - ✅ CLAUDE.md writes: section markers + atomic write + filelock to prevent user edit loss (Phase 3)
 - ✅ Corrupt markers: graceful fallback strips partial markers (Phase 3)
 - ✅ Sandbox mode: bridge write skipped in sandbox mode; matcher tests use monkeypatch (Phase 3)
-- Agent output format drift: need strict JSON schemas between agents (Phase 4)
+- ✅ Agent output format drift: strict JSON schemas between agents with per-agent validators (Phase 4.1)
 
 ## Research References (methodology insights)
 - **Grove** (arxiv 2511.17833): hierarchical knowledge trees with applicability predicates — model for CLAUDE.md bridge
