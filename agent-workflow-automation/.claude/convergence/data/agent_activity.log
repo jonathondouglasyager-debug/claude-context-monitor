@@ -26,3 +26,87 @@
 [2026-02-17T02:09:15Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'debate'
 [2026-02-17T02:09:15Z] [PIPELINE] [PIPELINE] [INFO] Skipping research (checkpoint completed)
 [2026-02-17T02:09:15Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'skipped': True}, 'debate': True, 'convergence': True}
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Checkpoint: research already completed for test_issue_checkpoint_001, skipping
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [ERROR] Issue not found: test_issue_checkpoint_001
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'research'
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for test_issue_checkpoint_001
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for test_issue_checkpoint_001 | results={'researcher': True, 'solution_finder': True, 'impact_assessor': True} | status=researched
+
+============================================================
+  [test_issue_checkpoint_001] DEBATE: Adversarial Cross-Agent Debate
+============================================================
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Starting adversarial debate (rounds=1)
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.md | path=/tmp/pytest-of-eager-relaxed-fermi/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.md
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.log | path=/tmp/pytest-of-eager-relaxed-fermi/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.log
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Schema validation passed for debate.json | agent=debater
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote structured output: debate.json | path=/tmp/pytest-of-eager-relaxed-fermi/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.json
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Debate metrics written | survival_rate=1.0 | skeptic_score=0.375 | kappa=0.25
+[2026-02-17T02:19:52Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Adversarial debate complete (rounds=1)
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-17T02:19:52Z] [PIPELINE] [CONVERGE] [INFO] Converging 1 issues
+[2026-02-17T02:19:52Z] [PIPELINE] [CONVERGE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:19:52Z] [PIPELINE] [CONVERGE] [ERROR] Failed to write convergence report: [Errno 2] No such file or directory: '/tmp/pytest-of-eager-relaxed-fermi/pytest-0/test_run_full_pipeline_from_sc0/output/convergence.md'
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'researcher': True, 'solution_finder': True, 'impact_assessor': True}, 'debate': True, 'convergence': False}
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'debate'
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Skipping research (checkpoint completed)
+[2026-02-17T02:19:52Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'skipped': True}, 'debate': True, 'convergence': True}
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Checkpoint: research already completed for test_issue_checkpoint_001, skipping
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [ERROR] Issue not found: test_issue_checkpoint_001
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'research'
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for test_issue_checkpoint_001
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for test_issue_checkpoint_001 | results={'researcher': True, 'solution_finder': True, 'impact_assessor': True} | status=researched
+
+============================================================
+  [test_issue_checkpoint_001] DEBATE: Adversarial Cross-Agent Debate
+============================================================
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Starting adversarial debate (rounds=1)
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.md | path=/tmp/pytest-of-sharp-focused-turing/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.md
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.log | path=/tmp/pytest-of-sharp-focused-turing/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.log
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Schema validation passed for debate.json | agent=debater
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote structured output: debate.json | path=/tmp/pytest-of-sharp-focused-turing/pytest-0/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.json
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Debate metrics written | survival_rate=1.0 | skeptic_score=0.375 | kappa=0.25
+[2026-02-17T02:33:21Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Adversarial debate complete (rounds=1)
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-17T02:33:21Z] [PIPELINE] [CONVERGE] [INFO] Converging 1 issues
+[2026-02-17T02:33:21Z] [PIPELINE] [CONVERGE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:33:21Z] [PIPELINE] [CONVERGE] [ERROR] Failed to write convergence report: [Errno 2] No such file or directory: '/tmp/pytest-of-sharp-focused-turing/pytest-0/test_run_full_pipeline_from_sc0/output/convergence.md'
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'researcher': True, 'solution_finder': True, 'impact_assessor': True}, 'debate': True, 'convergence': False}
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'debate'
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Skipping research (checkpoint completed)
+[2026-02-17T02:33:21Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'skipped': True}, 'debate': True, 'convergence': True}
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Checkpoint: research already completed for test_issue_checkpoint_001, skipping
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [ERROR] Issue not found: test_issue_checkpoint_001
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'research'
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Starting research pipeline for test_issue_checkpoint_001
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Research pipeline complete for test_issue_checkpoint_001 | results={'researcher': True, 'solution_finder': True, 'impact_assessor': True} | status=researched
+
+============================================================
+  [test_issue_checkpoint_001] DEBATE: Adversarial Cross-Agent Debate
+============================================================
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Starting adversarial debate (rounds=1)
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.md | path=/tmp/pytest-of-sharp-focused-turing/pytest-1/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.md
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote research output: debate.log | path=/tmp/pytest-of-sharp-focused-turing/pytest-1/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.log
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Schema validation passed for debate.json | agent=debater
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Wrote structured output: debate.json | path=/tmp/pytest-of-sharp-focused-turing/pytest-1/test_run_full_pipeline_from_sc0/research/test_issue_checkpoint_001/debate.json
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Debate metrics written | survival_rate=1.0 | skeptic_score=0.375 | kappa=0.25
+[2026-02-17T02:39:48Z] [test_issue_checkpoint_001] [DEBATE] [INFO] Adversarial debate complete (rounds=1)
+
+============================================================
+  [PIPELINE] CONVERGE: Convergence Synthesis
+============================================================
+[2026-02-17T02:39:48Z] [PIPELINE] [CONVERGE] [INFO] Converging 1 issues
+[2026-02-17T02:39:48Z] [PIPELINE] [CONVERGE] [INFO] Sandbox mode: returning mock response
+[2026-02-17T02:39:48Z] [PIPELINE] [CONVERGE] [ERROR] Failed to write convergence report: [Errno 2] No such file or directory: '/tmp/pytest-of-sharp-focused-turing/pytest-1/test_run_full_pipeline_from_sc0/output/convergence.md'
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'researcher': True, 'solution_finder': True, 'impact_assessor': True}, 'debate': True, 'convergence': False}
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Running full pipeline for test_issue_checkpoint_001 starting from 'debate'
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Skipping research (checkpoint completed)
+[2026-02-17T02:39:48Z] [PIPELINE] [PIPELINE] [INFO] Full pipeline complete for test_issue_checkpoint_001: {'research': {'skipped': True}, 'debate': True, 'convergence': True}

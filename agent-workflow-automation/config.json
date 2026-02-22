@@ -13,7 +13,7 @@
     "auto_research": true,
     "auto_converge_on_session_end": true,
     "min_issues_for_convergence": 1,
-    "sandbox_mode": true,
+    "sandbox_mode": false,
     "budget": {
       "max_parallel_agents": 2,
       "max_tokens_per_agent": 4000,

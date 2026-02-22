@@ -2,45 +2,5 @@
   "name": "claude-error-learning",
   "version": "3.0.0",
   "description": "Error learning system with convergence engine -- captures errors, researches root causes via multi-agent pipeline, debates findings, produces convergence reports with actionable tasks, and bridges knowledge to CLAUDE.md for cross-session learning.",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash|Execute",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/fingerprint-matcher.py\""
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/convergence-dispatcher.py\""
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/convergence-synthesizer.py\""
-          }
-        ]
-      }
-    ]
-  },
-  "commands": {
-    "converge": {
-      "description": "Convergence engine -- capture, research, debate, and converge issues into actionable tasks",
-      "file": "commands/converge.md"
-    }
-  }
+  "commands": ["./commands/converge.md"]
 }

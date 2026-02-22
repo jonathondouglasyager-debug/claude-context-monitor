@@ -29,20 +29,32 @@ Capture → Research (3 agents in parallel) → Adversarial Debate → Convergen
 - Python 3.10+
 - `filelock` package: `pip install filelock`
 
-### Install as Plugin
+### Local Development / Testing
+
+Load the plugin directly with the `--plugin-dir` flag:
 
 ```bash
-claude plugin add /path/to/agent-workflow-automation
+claude --plugin-dir /path/to/agent-workflow-automation
 ```
 
-Or clone and add:
+Or clone and test:
 
 ```bash
 git clone https://github.com/jonathondouglasyager-debug/claude-context-monitor.git
-claude plugin add claude-context-monitor/agent-workflow-automation
+claude --plugin-dir claude-context-monitor/agent-workflow-automation
 ```
 
-This registers three hooks automatically:
+### Install from a Marketplace
+
+If published to a plugin marketplace, install with:
+
+```bash
+/plugin install claude-error-learning@marketplace-name
+```
+
+### Hooks
+
+Hooks are defined in `hooks/hooks.json` and loaded automatically by Claude Code:
 
 | Hook | Trigger | What It Does |
 |------|---------|--------------|
@@ -50,13 +62,9 @@ This registers three hooks automatically:
 | `fingerprint-matcher` | PreToolUse (Bash/Execute) | Warns if command matches a known error pattern |
 | `convergence-synthesizer` | SessionEnd | Runs the full convergence pipeline |
 
-### Verify Installation
+### Verify
 
-```bash
-claude plugin list
-```
-
-You should see `claude-error-learning` (v3.0.0) with three hooks listed.
+Once loaded, run `/help` — you should see `/claude-error-learning:converge` listed.
 
 ## Usage
 
